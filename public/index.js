@@ -76,6 +76,7 @@ SiteFinishView = (function() {
       }
       keys = {
         78: "n",
+        73: "i",
         8: "delete",
         46: "delete",
         27: "esc"
@@ -132,6 +133,7 @@ SiteFinishPresenter = (function() {
     this.saveBoxHtml = __bind(this.saveBoxHtml, this);;
     this.editBoxText = __bind(this.editBoxText, this);;
     this.key_esc = __bind(this.key_esc, this);;
+    this.key_i = __bind(this.key_i, this);;
     this.key_n = __bind(this.key_n, this);;
     this.key_delete = __bind(this.key_delete, this);;
     this.showLink = __bind(this.showLink, this);;
@@ -199,6 +201,9 @@ SiteFinishPresenter = (function() {
   };
   SiteFinishPresenter.prototype.key_n = function() {
     return this.addBox();
+  };
+  SiteFinishPresenter.prototype.key_i = function() {
+    return this.editBoxText();
   };
   SiteFinishPresenter.prototype.key_esc = function() {
     return this.saveBoxHtml();
@@ -296,8 +301,12 @@ BoxView = (function() {
     this.el.dragsimple();
   }
   BoxView.prototype.textify = function() {
+    var height, width;
     this.html = this.el.html();
-    return this.el.html("<textarea>" + this.html + "</textarea>");
+    width = this.el.width() - 10;
+    height = this.el.height() - 10;
+    this.el.html("<textarea style=\"width:" + width + "px; height:" + height + "px\">" + this.html + "</textarea>");
+    return this.el.find("textarea").focus();
   };
   BoxView.prototype.saveHtml = function() {
     this.html = this.el.find("textarea").val();

@@ -87,6 +87,13 @@ test("should see a link to the site this is generating", function(done) {
   _.assertSee("http://meta.sf.the.tl");
   return done();
 });
+test("should be able to click i to go in insert mode", function(done) {
+  var box;
+  box = app.addBox();
+  app.view.trigger("key", "i");
+  _.assertOk(box.view.el.find("textarea").length, "should be in edit mode");
+  return done();
+});
 test("selected box shold be highlighted", function(done) {
   return done();
 });

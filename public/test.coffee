@@ -91,6 +91,14 @@ test "should see a link to the site this is generating", (done) ->
   _.assertSee "http://meta.sf.the.tl"
   done()
 
+test "should be able to click i to go in insert mode", (done) ->
+  box = app.addBox()
+  app.view.trigger "key", "i"
+  _.assertOk box.view.el.find("textarea").length, "should be in edit mode"
+
+
+  done()
+
 
 test "selected box shold be highlighted", (done) ->
   #TODO: this

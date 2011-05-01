@@ -54,6 +54,7 @@ class SiteFinishView extends Backbone.View
       if @state is "input" and e.keyCode isnt 27 then return
       keys =
         78: "n"
+        73: "i"
         8: "delete"
         46: "delete"
         27: "esc"
@@ -73,9 +74,6 @@ class SiteFinishView extends Backbone.View
    setCurrentBox: (box) =>
      $('.box.selected').removeClass "selected"
      box.view.el.addClass "selected"
-
-     
-     
 
 class SiteFinishController extends Backbone.Controller
   constructor: () ->
@@ -146,6 +144,7 @@ class SiteFinishPresenter
     
   key_delete: => @removeBox()
   key_n: => @addBox()
+  key_i: => @editBoxText()
   key_esc: => @saveBoxHtml()
   editBoxText: (box) =>
     box ||= @currentBox
@@ -211,7 +210,10 @@ class BoxView extends Backbone.View
     @el.dragsimple()
   textify: () =>
     @html = @el.html()
-    @el.html "<textarea>#{@html}</textarea>"
+    width = @el.width() - 10
+    height = @el.height() - 10
+    @el.html "<textarea style=\"width:#{width}px; height:#{height}px\">#{@html}</textarea>"
+    @el.find("textarea").focus()
   saveHtml: () =>
     @html = @el.find("textarea").val()
     @el.html @html
