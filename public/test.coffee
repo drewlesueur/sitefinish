@@ -49,7 +49,6 @@ test "should be able to delete a specific box", (done) ->
   app.removeBox box3
   done()
   
-
 test "hitting n should add new box", (done) ->
   oldLength = app.boxes.length
   app.view.trigger "key", "n"
@@ -87,6 +86,11 @@ test "should be able to generate an html page", (done) ->
     _.assertOk !err, "no error on save"
     _.assertEqual _.isEqual(result,{}), true, "only checking for success now"
     done err, result
+ 
+test "should see a link to the site this is generating", (done) ->
+  _.assertSee "http://meta.sf.the.tl"
+  done()
+
 
 test "selected box shold be highlighted", (done) ->
   #TODO: this

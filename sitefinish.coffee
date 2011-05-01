@@ -24,16 +24,37 @@ app.get /^\/\w+$/, (req, res) ->
   res.sendfile "public/index.html"
 
 app.post "/:site", (req, res) ->
+  console.log "saving #{req.params.site}"
   saveTo = "/home/drew/sites/#{req.params.site}.sf.the.tl"
+  console.log saveTo
   if not path.existsSync saveTo
-    fs.mkdir "", '0777', (err) ->
+    console.log "it doesnt exist"
+    fs.mkdir saveTo, '0777', (err) ->
       if err
         console.log "there was an error"
         return res.send err, 500
-      res.send {}
-  else
-    res.send {}
+  console.log "going to save the file"
+  req.body.page ||= "hello world"
+  console.log "the data is #{req.body.page}"
+  content = """
+    <!doctype html>
+    <html>
+    <head>
+    <style>
+      .box {
+        position: absolute;
+      }
+    </style>
+    </head>
+    <body>
+      #{req.body.page}
+    </body>
+    </html>
+  """
 
+  fs.writeFile "#{saveTo}/index.html", content, (err) ->
+    if err then return res.send err, 500 
+    res.send {}
 
 
   

@@ -83,6 +83,10 @@ test("should be able to generate an html page", function(done) {
     return done(err, result);
   });
 });
+test("should see a link to the site this is generating", function(done) {
+  _.assertSee("http://meta.sf.the.tl");
+  return done();
+});
 test("selected box shold be highlighted", function(done) {
   return done();
 });

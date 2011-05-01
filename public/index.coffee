@@ -109,8 +109,41 @@ class SiteFinishPresenter
     @siteFinishController = new SiteFinishController
     Backbone.history.start()
     @view.bind "save", (done= ->) =>
-      server "#{location.pathname}", (err, data) ->
+      send = 
+        page: $('#page').html()
+      send = JSON.stringify send
+      server "#{@getPathName()}", send, (err, data) ->
         done err, data
+    @showLink()
+  getPathName: ->
+    pathname = location.pathname
+    if pathname is "/" then pathname = "/meta"
+    pathname
+  getLink: =>
+    pathname = @getPathName()
+    subdomain = _.s pathname, 1
+    @link = "http://#{subdomain}.sf.the.tl"
+    return @link
+  showLink: =>
+    # if aimee is "happy"
+    #   alert "happy"
+
+    # if (aimee == "happy") {
+    #   alert("happy");
+    # }
+
+    # if ($aimee == "happy") {
+    #   alert("happy");
+    # }
+
+    # if aimee == "happy":
+    #   alert("happy")
+
+    # if aimee == "happy"
+    #   alert "happy"
+    # end
+    $('#link').attr("href", @getLink).text @getLink
+    
   key_delete: => @removeBox()
   key_n: => @addBox()
   key_esc: => @saveBoxHtml()

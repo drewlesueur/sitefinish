@@ -133,7 +133,9 @@ SiteFinishPresenter = (function() {
     this.editBoxText = __bind(this.editBoxText, this);;
     this.key_esc = __bind(this.key_esc, this);;
     this.key_n = __bind(this.key_n, this);;
-    this.key_delete = __bind(this.key_delete, this);;    this.boxes = new Boxes;
+    this.key_delete = __bind(this.key_delete, this);;
+    this.showLink = __bind(this.showLink, this);;
+    this.getLink = __bind(this.getLink, this);;    this.boxes = new Boxes;
     this.boxes.bind("add", __bind(function(box, boxes) {
       return this.view.addBox(box);
     }, this));
@@ -160,14 +162,38 @@ SiteFinishPresenter = (function() {
     this.siteFinishController = new SiteFinishController;
     Backbone.history.start();
     this.view.bind("save", __bind(function(done) {
+      var send;
       if (done == null) {
         done = function() {};
       }
-      return server("" + location.pathname, function(err, data) {
+      send = {
+        page: $('#page').html()
+      };
+      send = JSON.stringify(send);
+      return server("" + (this.getPathName()), send, function(err, data) {
         return done(err, data);
       });
     }, this));
+    this.showLink();
   }
+  SiteFinishPresenter.prototype.getPathName = function() {
+    var pathname;
+    pathname = location.pathname;
+    if (pathname === "/") {
+      pathname = "/meta";
+    }
+    return pathname;
+  };
+  SiteFinishPresenter.prototype.getLink = function() {
+    var pathname, subdomain;
+    pathname = this.getPathName();
+    subdomain = _.s(pathname, 1);
+    this.link = "http://" + subdomain + ".sf.the.tl";
+    return this.link;
+  };
+  SiteFinishPresenter.prototype.showLink = function() {
+    return $('#link').attr("href", this.getLink).text(this.getLink);
+  };
   SiteFinishPresenter.prototype.key_delete = function() {
     return this.removeBox();
   };
