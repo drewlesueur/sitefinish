@@ -80,27 +80,19 @@ test "should be able to edit the text of a box", (done) ->
   app.editBoxText box
   box.view.el.find("textarea").val("hazte valer").blur()
   _.assertEqual box.view.el.text(), "hazte valer", "edit success on blur"
-
-
   done()
+
+test "should be able to generate an html page", (done) ->
+  app.view.trigger "save", (err, result) ->
+    _.assertOk !err, "no error on save"
+    _.assertEqual _.isEqual(result,{}), true, "only checking for success now"
+    done err, result
 
 test "selected box shold be highlighted", (done) ->
   #TODO: this
   done()
 
 
-server = (method, callback) ->
-  if _.isArray method
-    [method, args...] = method
-  $.ajax 
-    url: "/#{method}"
-    type: "POST"
-    contentType: 'application/json'
-    data: args
-    dataType: 'json'
-    processData: false
-    success: (data) -> callback null, data
-    error: (data) -> callback data
 
 testsComplete = (err, results) -> 
   results = """

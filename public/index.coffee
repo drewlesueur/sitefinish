@@ -2,6 +2,41 @@ _.each ['s'], (method) ->
   Backbone.Collection.prototype[method] = () ->
     return _[method].apply _, [this.models].concat _.toArray arguments
 
+server = (args...) ->
+  method = args[0]
+
+  if args.length is 2
+    if _.isFunction(args[1])
+      callback = args[1]
+    else
+      data = args[1]
+  else if args.length is 3
+    data = args[1]
+    callback = args[2]
+
+  #data ||= {}
+  callback ||= ->
+
+  if _.isArray method
+    [method, args...] = method
+
+  if _.s(method, 0,1)[0] isnt "/"
+    method = "/#{method}"
+  $.ajax 
+    url: method
+    type: "POST"
+    contentType: 'application/json'
+    data: data
+    dataType: 'json'
+    processData: false
+    success: (data) ->
+      console.log "there was success"
+      callback null, data
+    error: (data) ->
+      console.log data
+      console.log "there was a server error"
+      callback data
+
 liteAlert = (message) ->
   console.log message
 
@@ -12,6 +47,9 @@ class SiteFinishView extends Backbone.View
     $('#box').click (e) =>
       e.preventDefault()
       @trigger "addboxclick"
+    $('#save').click (e) =>
+      e.preventDefault()
+      @trigger "save"
     $(document.body).keydown (e) =>
       if @state is "input" and e.keyCode isnt 27 then return
       keys =
@@ -70,6 +108,9 @@ class SiteFinishPresenter
       @setCurrentBox box
     @siteFinishController = new SiteFinishController
     Backbone.history.start()
+    @view.bind "save", (done= ->) =>
+      server "#{location.pathname}", (err, data) ->
+        done err, data
   key_delete: => @removeBox()
   key_n: => @addBox()
   key_esc: => @saveBoxHtml()

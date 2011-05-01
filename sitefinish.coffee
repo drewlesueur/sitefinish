@@ -1,5 +1,7 @@
 _ = require "underscore"
 require("drews-mixins") _
+fs = require "fs"
+path = require "path"
 express = require('express');
 app = module.exports = express.createServer();
 app.configure () ->
@@ -17,6 +19,25 @@ app.configure 'production', () ->
   app.use(express.errorHandler()); 
 
 # Routes
+app.get /^\/\w+$/, (req, res) ->
+  console.log "loading site"
+  res.sendfile "public/index.html"
+
+app.post "/:site", (req, res) ->
+  saveTo = "/home/drew/sites/#{req.params.site}.sf.the.tl"
+  if not path.existsSync saveTo
+    fs.mkdir "", '0777', (err) ->
+      if err
+        console.log "there was an error"
+        return res.send err, 500
+      res.send {}
+  else
+    res.send {}
+
+
+
+  
+
 
 exports.app = app
 

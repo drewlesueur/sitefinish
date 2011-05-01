@@ -1,5 +1,5 @@
-var Box, BoxView, Boxes, SiteFinishController, SiteFinishPresenter, SiteFinishView, boxCount, liteAlert;
-var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
+var Box, BoxView, Boxes, SiteFinishController, SiteFinishPresenter, SiteFinishView, boxCount, liteAlert, server;
+var __slice = Array.prototype.slice, __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; }, __hasProp = Object.prototype.hasOwnProperty, __extends = function(child, parent) {
   for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; }
   function ctor() { this.constructor = child; }
   ctor.prototype = parent.prototype;
@@ -12,6 +12,45 @@ _.each(['s'], function(method) {
     return _[method].apply(_, [this.models].concat(_.toArray(arguments)));
   };
 });
+server = function() {
+  var args, callback, data, method, _ref;
+  args = 1 <= arguments.length ? __slice.call(arguments, 0) : [];
+  method = args[0];
+  if (args.length === 2) {
+    if (_.isFunction(args[1])) {
+      callback = args[1];
+    } else {
+      data = args[1];
+    }
+  } else if (args.length === 3) {
+    data = args[1];
+    callback = args[2];
+  }
+  callback || (callback = function() {});
+  if (_.isArray(method)) {
+    _ref = method, method = _ref[0], args = 2 <= _ref.length ? __slice.call(_ref, 1) : [];
+  }
+  if (_.s(method, 0, 1)[0] !== "/") {
+    method = "/" + method;
+  }
+  return $.ajax({
+    url: method,
+    type: "POST",
+    contentType: 'application/json',
+    data: data,
+    dataType: 'json',
+    processData: false,
+    success: function(data) {
+      console.log("there was success");
+      return callback(null, data);
+    },
+    error: function(data) {
+      console.log(data);
+      console.log("there was a server error");
+      return callback(data);
+    }
+  });
+};
 liteAlert = function(message) {
   return console.log(message);
 };
@@ -25,6 +64,10 @@ SiteFinishView = (function() {
     $('#box').click(__bind(function(e) {
       e.preventDefault();
       return this.trigger("addboxclick");
+    }, this));
+    $('#save').click(__bind(function(e) {
+      e.preventDefault();
+      return this.trigger("save");
     }, this));
     $(document.body).keydown(__bind(function(e) {
       var keys;
@@ -116,6 +159,14 @@ SiteFinishPresenter = (function() {
     }, this));
     this.siteFinishController = new SiteFinishController;
     Backbone.history.start();
+    this.view.bind("save", __bind(function(done) {
+      if (done == null) {
+        done = function() {};
+      }
+      return server("" + location.pathname, function(err, data) {
+        return done(err, data);
+      });
+    }, this));
   }
   SiteFinishPresenter.prototype.key_delete = function() {
     return this.removeBox();

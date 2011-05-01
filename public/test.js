@@ -1,5 +1,4 @@
-var runTest, runTests, server, test, tests, testsComplete;
-var __slice = Array.prototype.slice;
+var runTest, runTests, test, tests, testsComplete;
 _.assertClose = function(val, otherVal, within, message) {
   if (Math.abs(otherVal - val) <= within) {
     return _.assertPass(val, otherVal, message, "within " + within + " of", _.assertClose);
@@ -77,29 +76,16 @@ test("should be able to edit the text of a box", function(done) {
   _.assertEqual(box.view.el.text(), "hazte valer", "edit success on blur");
   return done();
 });
+test("should be able to generate an html page", function(done) {
+  return app.view.trigger("save", function(err, result) {
+    _.assertOk(!err, "no error on save");
+    _.assertEqual(_.isEqual(result, {}), true, "only checking for success now");
+    return done(err, result);
+  });
+});
 test("selected box shold be highlighted", function(done) {
   return done();
 });
-server = function(method, callback) {
-  var args, _ref;
-  if (_.isArray(method)) {
-    _ref = method, method = _ref[0], args = 2 <= _ref.length ? __slice.call(_ref, 1) : [];
-  }
-  return $.ajax({
-    url: "/" + method,
-    type: "POST",
-    contentType: 'application/json',
-    data: args,
-    dataType: 'json',
-    processData: false,
-    success: function(data) {
-      return callback(null, data);
-    },
-    error: function(data) {
-      return callback(data);
-    }
-  });
-};
 testsComplete = function(err, results) {
   results = "" + (_.getAssertCount()) + " tests ran\n" + (_.getPassCount()) + " tests passed\n" + (_.getFailCount()) + " tests failed";
   $('#test-text').html(results.replace(/\n/g, "<br />"));
