@@ -13,22 +13,29 @@ class SiteFinishView extends Backbone.View
       e.preventDefault()
       @trigger "addboxclick"
     $(document.body).keydown (e) =>
+      if @state is "input" and e.keyCode isnt 27 then return
+      keys =
+        78: "n"
+        8: "delete"
+        46: "delete"
+        27: "esc"
       console.log e.keyCode
-      if e.keyCode in [8, 46] # the delete keys
+      if e.keyCode of keys
         e.preventDefault()
-        @trigger "key", "delete"
+        @trigger "key", keys[e.keyCode]
         return false
    addBox: (box) =>
      @el.append box.view.el
      box.view.el.bind "dblclick", =>
        @trigger "boxdblclick", box
-     box.view.el.bind "click", =>
+     box.view.el.bind "mousedown", =>
        @trigger "boxclick", box
    removeBox: (box) =>
      box.view.el.remove()
    setCurrentBox: (box) =>
      $('.box.selected').removeClass "selected"
      box.view.el.addClass "selected"
+
      
      
 
@@ -55,15 +62,31 @@ class SiteFinishPresenter
     @view = new SiteFinishView()
     @view.bind "addboxclick", (done) => @addBox(done)
     @view.bind "key", (key) =>
-      if key is "delete"
-        console.log "trying to delete"
-        @removeBox()
-    @view.bind "boxdblclick", (box) =>
-      box.view.textify()
+      theKey = "key_#{key}"
+      if theKey of @
+        @[theKey]()
+    @view.bind "boxdblclick", (box) => @editBoxText(box)
     @view.bind "boxclick", (box) =>
       @setCurrentBox box
     @siteFinishController = new SiteFinishController
     Backbone.history.start()
+  key_delete: => @removeBox()
+  key_n: => @addBox()
+  key_esc: => @saveBoxHtml()
+  editBoxText: (box) =>
+    box ||= @currentBox
+    @setCurrentBox box
+    @view.state = "input"
+    box.view.el.dragsimple "destroy"
+    box.view.textify()
+    box.view.el.find("textarea").blur () => @saveBoxHtml box
+  saveBoxHtml: (box)=>
+    box ||= @currentBox
+    if @view.state is "input"
+      box.view.saveHtml()
+      @view.state = "not input"
+      box.view.el.dragsimple()
+      
   removeBox: (box) =>
     box ||= @currentBox
     if not box
@@ -81,17 +104,14 @@ class SiteFinishPresenter
     box = new Box type: "div"
     box.view = new BoxView model: box
     @boxes.add box
-    @currentBox = box
+    @setCurrentBox box
     done null, @currentBox
     return @currentBox
   setCurrentBox: (box) => 
+    if @view.state == "input" then return false 
     @view.setCurrentBox box 
     @currentBox = box
     
-  
-
-
-
     
 class Boxes extends Backbone.Collection
   url: "/boxes"
@@ -112,12 +132,16 @@ class BoxView extends Backbone.View
     @el.addClass "box"
     @el.attr "id", "box#{++boxCount}"
     @el.css
-      top: "200px"
-      left: "200px"
+      top: "50px"
+      left: "50px"
     @el.dragsimple()
   textify: () =>
     @html = @el.html()
-    @el.html "<textarea>#{html}</textarea>"
+    @el.html "<textarea>#{@html}</textarea>"
+  saveHtml: () =>
+    @html = @el.find("textarea").val()
+    @el.html @html
+    
 
 
 

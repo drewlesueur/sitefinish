@@ -27,11 +27,20 @@ SiteFinishView = (function() {
       return this.trigger("addboxclick");
     }, this));
     $(document.body).keydown(__bind(function(e) {
-      var _ref;
+      var keys;
+      if (this.state === "input" && e.keyCode !== 27) {
+        return;
+      }
+      keys = {
+        78: "n",
+        8: "delete",
+        46: "delete",
+        27: "esc"
+      };
       console.log(e.keyCode);
-      if ((_ref = e.keyCode) === 8 || _ref === 46) {
+      if (e.keyCode in keys) {
         e.preventDefault();
-        this.trigger("key", "delete");
+        this.trigger("key", keys[e.keyCode]);
         return false;
       }
     }, this));
@@ -41,7 +50,7 @@ SiteFinishView = (function() {
     box.view.el.bind("dblclick", __bind(function() {
       return this.trigger("boxdblclick", box);
     }, this));
-    return box.view.el.bind("click", __bind(function() {
+    return box.view.el.bind("mousedown", __bind(function() {
       return this.trigger("boxclick", box);
     }, this));
   };
@@ -76,7 +85,12 @@ SiteFinishPresenter = (function() {
   function SiteFinishPresenter() {
     this.setCurrentBox = __bind(this.setCurrentBox, this);;
     this.addBox = __bind(this.addBox, this);;
-    this.removeBox = __bind(this.removeBox, this);;    this.boxes = new Boxes;
+    this.removeBox = __bind(this.removeBox, this);;
+    this.saveBoxHtml = __bind(this.saveBoxHtml, this);;
+    this.editBoxText = __bind(this.editBoxText, this);;
+    this.key_esc = __bind(this.key_esc, this);;
+    this.key_n = __bind(this.key_n, this);;
+    this.key_delete = __bind(this.key_delete, this);;    this.boxes = new Boxes;
     this.boxes.bind("add", __bind(function(box, boxes) {
       return this.view.addBox(box);
     }, this));
@@ -88,13 +102,14 @@ SiteFinishPresenter = (function() {
       return this.addBox(done);
     }, this));
     this.view.bind("key", __bind(function(key) {
-      if (key === "delete") {
-        console.log("trying to delete");
-        return this.removeBox();
+      var theKey;
+      theKey = "key_" + key;
+      if (theKey in this) {
+        return this[theKey]();
       }
     }, this));
     this.view.bind("boxdblclick", __bind(function(box) {
-      return box.view.textify();
+      return this.editBoxText(box);
     }, this));
     this.view.bind("boxclick", __bind(function(box) {
       return this.setCurrentBox(box);
@@ -102,6 +117,33 @@ SiteFinishPresenter = (function() {
     this.siteFinishController = new SiteFinishController;
     Backbone.history.start();
   }
+  SiteFinishPresenter.prototype.key_delete = function() {
+    return this.removeBox();
+  };
+  SiteFinishPresenter.prototype.key_n = function() {
+    return this.addBox();
+  };
+  SiteFinishPresenter.prototype.key_esc = function() {
+    return this.saveBoxHtml();
+  };
+  SiteFinishPresenter.prototype.editBoxText = function(box) {
+    box || (box = this.currentBox);
+    this.setCurrentBox(box);
+    this.view.state = "input";
+    box.view.el.dragsimple("destroy");
+    box.view.textify();
+    return box.view.el.find("textarea").blur(__bind(function() {
+      return this.saveBoxHtml(box);
+    }, this));
+  };
+  SiteFinishPresenter.prototype.saveBoxHtml = function(box) {
+    box || (box = this.currentBox);
+    if (this.view.state === "input") {
+      box.view.saveHtml();
+      this.view.state = "not input";
+      return box.view.el.dragsimple();
+    }
+  };
   SiteFinishPresenter.prototype.removeBox = function(box) {
     var index, newCurrentBox, oldBox;
     box || (box = this.currentBox);
@@ -131,11 +173,14 @@ SiteFinishPresenter = (function() {
       model: box
     });
     this.boxes.add(box);
-    this.currentBox = box;
+    this.setCurrentBox(box);
     done(null, this.currentBox);
     return this.currentBox;
   };
   SiteFinishPresenter.prototype.setCurrentBox = function(box) {
+    if (this.view.state === "input") {
+      return false;
+    }
     this.view.setCurrentBox(box);
     return this.currentBox = box;
   };
@@ -161,20 +206,25 @@ boxCount = 0;
 BoxView = (function() {
   __extends(BoxView, Backbone.View);
   function BoxView() {
+    this.saveHtml = __bind(this.saveHtml, this);;
     this.textify = __bind(this.textify, this);;    BoxView.__super__.constructor.apply(this, arguments);
     this.type = this.model.get('type') || "div";
     this.el = $(this.make(this.type));
     this.el.addClass("box");
     this.el.attr("id", "box" + (++boxCount));
     this.el.css({
-      top: "200px",
-      left: "200px"
+      top: "50px",
+      left: "50px"
     });
     this.el.dragsimple();
   }
   BoxView.prototype.textify = function() {
     this.html = this.el.html();
-    return this.el.html("<textarea>" + html + "</textarea>");
+    return this.el.html("<textarea>" + this.html + "</textarea>");
+  };
+  BoxView.prototype.saveHtml = function() {
+    this.html = this.el.find("textarea").val();
+    return this.el.html(this.html);
   };
   return BoxView;
 })();

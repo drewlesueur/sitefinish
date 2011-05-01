@@ -49,15 +49,44 @@ test "should be able to delete a specific box", (done) ->
   app.removeBox box3
   done()
   
-  
+
+test "hitting n should add new box", (done) ->
+  oldLength = app.boxes.length
+  app.view.trigger "key", "n"
+  newLength = app.boxes.length
+  _.assertEqual  newLength, oldLength + 1, "n should add box"
+  app.removeBox()
+  done()
+
+
 test "Should be able to delete a box", (done) ->
   app.view.trigger "key", "delete"
   _.assertEqual $('#box1').length, 0,
   "The added box should be gone"
-
   done()
 #test "Should be able to "
 
+
+test "should be able to edit the text of a box", (done) ->
+  box = app.addBox()
+  _.assertOk box.view.el.hasClass("dragsimple")
+  app.view.trigger "boxdblclick", box
+  _.assertOk !box.view.el.hasClass("dragsimple"), "is draggable"
+  _.assertOk box.view.el.hasClass("selected"), "is selected"
+  box.view.el.find("textarea").val "test text"
+  app.view.trigger "key", "esc"
+  _.assertEqual box.view.el.text(), "test text", "edit success"
+
+  app.editBoxText box
+  box.view.el.find("textarea").val("hazte valer").blur()
+  _.assertEqual box.view.el.text(), "hazte valer", "edit success on blur"
+
+
+  done()
+
+test "selected box shold be highlighted", (done) ->
+  #TODO: this
+  done()
 
 
 server = (method, callback) ->
